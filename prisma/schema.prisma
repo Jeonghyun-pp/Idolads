@@ -1,0 +1,337 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// Enums
+enum Role {
+  FAN
+  PROMOTER
+  CAFE_OWNER
+  ADVERTISER
+  ADMIN
+}
+
+enum EventStatus {
+  DRAFT
+  PUBLISHED
+  ENDED
+}
+
+enum OrderStatus {
+  PENDING
+  PAID
+  REJECTED
+  REFUNDED
+}
+
+enum ReviewStatus {
+  SUBMITTED
+  APPROVED
+  REJECTED
+}
+
+enum InquiryStatus {
+  REQUESTED
+  CONNECTED
+  DECLINED
+}
+
+// NextAuth Models
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@index([userId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+// User & Core Models
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String?   @unique
+  emailVerified DateTime?
+  password      String?
+  image         String?
+  role          Role      @default(FAN)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  accounts       Account[]
+  sessions       Session[]
+  events         Event[]
+  orders         Order[]
+  favorites      Favorite[]
+  placeInquiries PlaceInquiry[]
+
+  @@index([email])
+  @@index([role])
+}
+
+model Celeb {
+  id        String   @id @default(cuid())
+  name      String
+  nameEn    String?
+  nameJa    String?
+  nameZh    String?
+  imageUrl  String?
+  group     String?
+  birthDate DateTime?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  events    Event[]
+  favorites Favorite[]
+
+  @@index([name])
+}
+
+model Event {
+  id          String      @id @default(cuid())
+  title       String
+  titleEn     String?
+  titleJa     String?
+  titleZh     String?
+  description String?     @db.Text
+  imageUrl    String?
+  startDate   DateTime
+  endDate     DateTime
+  perks       String[]    // Array of perks (특전)
+  status      EventStatus @default(DRAFT)
+  
+  celebId     String
+  celeb       Celeb       @relation(fields: [celebId], references: [id], onDelete: Cascade)
+  
+  placeId     String?
+  place       Place?      @relation(fields: [placeId], references: [id], onDelete: SetNull)
+  
+  userId      String
+  user        User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  favorites   Favorite[]
+
+  @@index([celebId])
+  @@index([placeId])
+  @@index([userId])
+  @@index([status])
+  @@index([startDate])
+}
+
+model Place {
+  id          String   @id @default(cuid())
+  name        String
+  nameEn      String?
+  nameJa      String?
+  nameZh      String?
+  description String?  @db.Text
+  address     String
+  region      String?  // 지역 (서울/강남 등)
+  imageUrls   String[] // Gallery images
+  latitude    Float?
+  longitude   Float?
+  
+  // Rental info
+  rentalAvailable Boolean @default(false)
+  rentalRules     String? @db.Text
+  capacity        Int?
+  priceRange      String?
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  events       Event[]
+  inquiries    PlaceInquiry[]
+
+  @@index([region])
+  @@index([rentalAvailable])
+}
+
+model PlaceInquiry {
+  id        String        @id @default(cuid())
+  message   String        @db.Text
+  eventDate DateTime?
+  status    InquiryStatus @default(REQUESTED)
+  
+  placeId   String
+  place     Place         @relation(fields: [placeId], references: [id], onDelete: Cascade)
+  
+  userId    String
+  user      User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+
+  @@index([placeId])
+  @@index([userId])
+  @@index([status])
+}
+
+// Advertisement System
+model AdProduct {
+  id          String   @id @default(cuid())
+  title       String
+  titleEn     String?
+  titleJa     String?
+  titleZh     String?
+  description String?  @db.Text
+  priceKRW    Int      // Base price in KRW
+  termMonths  Int      // Duration in months
+  features    String[] // List of features
+  placement   String[] // Where ads will be shown (e.g., ["subway", "bus"])
+  imageUrl    String?
+  active      Boolean  @default(true)
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  orders      Order[]
+
+  @@index([active])
+}
+
+model Order {
+  id              String      @id @default(cuid())
+  orderNumber     String      @unique @default(cuid())
+  status          OrderStatus @default(PENDING)
+  amount          Int         // Total amount in KRW
+  currency        String      @default("KRW")
+  
+  // Stripe or payment info
+  paymentProvider String?     // "stripe"
+  paymentIntentId String?     @unique
+  sessionId       String?
+  
+  // Ad details
+  productId       String
+  product         AdProduct   @relation(fields: [productId], references: [id], onDelete: Restrict)
+  
+  addons          Json?       // Additional options
+  
+  userId          String
+  user            User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+
+  review          AdReview?
+  posting         AdPosting?
+
+  @@index([userId])
+  @@index([productId])
+  @@index([status])
+  @@index([orderNumber])
+}
+
+model AdReview {
+  id          String       @id @default(cuid())
+  status      ReviewStatus @default(SUBMITTED)
+  
+  // Creative materials
+  designUrls  String[]     // URLs to uploaded design files
+  copyText    String?      @db.Text
+  targetDate  DateTime?    // Preferred start date
+  
+  // Review feedback
+  feedback    String?      @db.Text
+  reviewedAt  DateTime?
+  
+  orderId     String       @unique
+  order       Order        @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  @@index([status])
+}
+
+model AdPosting {
+  id          String   @id @default(cuid())
+  
+  // Posting details
+  startDate   DateTime
+  endDate     DateTime
+  locations   String[] // Physical locations where ad is posted
+  
+  orderId     String   @unique
+  order       Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  proofs      AdProof[]
+
+  @@index([startDate])
+  @@index([endDate])
+}
+
+model AdProof {
+  id          String    @id @default(cuid())
+  imageUrl    String    // Photo of posted ad
+  location    String
+  takenAt     DateTime  @default(now())
+  
+  postingId   String
+  posting     AdPosting @relation(fields: [postingId], references: [id], onDelete: Cascade)
+  
+  createdAt   DateTime  @default(now())
+
+  @@index([postingId])
+}
+
+model Favorite {
+  id        String   @id @default(cuid())
+  
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  celebId   String?
+  celeb     Celeb?   @relation(fields: [celebId], references: [id], onDelete: Cascade)
+  
+  eventId   String?
+  event     Event?   @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  
+  createdAt DateTime @default(now())
+
+  @@unique([userId, celebId])
+  @@unique([userId, eventId])
+  @@index([userId])
+}
+

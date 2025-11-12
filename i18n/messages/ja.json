@@ -1,0 +1,24 @@
+﻿{
+  "hello": "こんにちは",
+  "home": {
+    "upcomingEvents": {
+      "title": "今後のイベント",
+      "subtitle": "ファンのための特別な誕生日カフェとイベントをご覧ください",
+      "unknownPlace": "場所未定"
+    },
+    "ads": {
+      "title": "ファン広告商品",
+      "subtitle": "あなたの愛を世界に伝えましょう"
+    },
+    "cta": {
+      "title": "今すぐ始めましょう",
+      "subtitle": "ファンイベントを登録するか、レンタル可能な会場を見つけてください。FanPlaceで特別な思い出を作りましょう。",
+      "startNow": "始める",
+      "browsePlaces": "会場を見る"
+    },
+    "common": {
+      "viewAll": "すべて表示",
+      "learnMore": "詳細を見る"
+    }
+  }
+}

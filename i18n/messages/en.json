@@ -1,0 +1,24 @@
+﻿{
+  "hello": "Hello",
+  "home": {
+    "upcomingEvents": {
+      "title": "Upcoming Events",
+      "subtitle": "Discover special birthday cafes and events for fans",
+      "unknownPlace": "Location TBD"
+    },
+    "ads": {
+      "title": "Fan Advertisement Products",
+      "subtitle": "Share your love with the world"
+    },
+    "cta": {
+      "title": "Get Started Now",
+      "subtitle": "Register fan events or find venues available for rent. Create special memories with FanPlace.",
+      "startNow": "Get Started",
+      "browsePlaces": "Browse Venues"
+    },
+    "common": {
+      "viewAll": "View All",
+      "learnMore": "Learn More"
+    }
+  }
+}

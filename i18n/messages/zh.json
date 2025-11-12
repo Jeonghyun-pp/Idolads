@@ -1,0 +1,24 @@
+﻿{
+  "hello": "你好",
+  "home": {
+    "upcomingEvents": {
+      "title": "即将举行的活动",
+      "subtitle": "发现为粉丝举办的特别生日咖啡馆和活动",
+      "unknownPlace": "地点待定"
+    },
+    "ads": {
+      "title": "粉丝广告产品",
+      "subtitle": "与世界分享你的爱"
+    },
+    "cta": {
+      "title": "立即开始",
+      "subtitle": "注册粉丝活动或寻找可租用的场地。与FanPlace一起创造特别的回忆。",
+      "startNow": "开始",
+      "browsePlaces": "浏览场地"
+    },
+    "common": {
+      "viewAll": "查看全部",
+      "learnMore": "了解更多"
+    }
+  }
+}

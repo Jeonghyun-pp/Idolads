@@ -1,0 +1,24 @@
+﻿{
+  "hello": "안녕하세요",
+  "home": {
+    "upcomingEvents": {
+      "title": "다가오는 이벤트",
+      "subtitle": "팬들을 위한 특별한 생일 카페와 이벤트를 만나보세요",
+      "unknownPlace": "장소 미정"
+    },
+    "ads": {
+      "title": "팬 광고 상품",
+      "subtitle": "당신의 사랑을 세상에 알리세요"
+    },
+    "cta": {
+      "title": "지금 바로 시작하세요",
+      "subtitle": "팬 이벤트를 등록하거나 대관 가능한 장소를 찾아보세요. FanPlace와 함께 특별한 추억을 만드세요.",
+      "startNow": "시작하기",
+      "browsePlaces": "장소 둘러보기"
+    },
+    "common": {
+      "viewAll": "모두 보기",
+      "learnMore": "자세히 보기"
+    }
+  }
+}
